@@ -29,8 +29,9 @@ class RenderMagicCommand extends Command
             ->addArgument('fireflies_num', InputArgument::OPTIONAL, 'Number of fireflies', 100)
             ->addArgument('fireflies_sync_factor', InputArgument::OPTIONAL, 'Factor by which nearby fireflies sync', 1)
             ->addArgument('fireflies_period', InputArgument::OPTIONAL, 'Default (before sync) firefly period (in seconds)', 10)
-            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in seconds)', 120)
+            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in seconds)', 10)
             ->addArgument('fps', InputArgument::OPTIONAL, 'FPS of the output movie', 20)
+            ->addOption("play", )
         ;
     }
 
@@ -45,7 +46,7 @@ class RenderMagicCommand extends Command
         );
 
         $output->writeln("Running simulation...");
-        $swarmRenderer = new SwarmRenderer();
+        $swarmRenderer = new SwarmRenderer($input->getArgument("field_size"));
         $numSteps = $input->getArgument("duration") * $input->getArgument("fps");
         $progressBar = new ProgressBar($output, $numSteps);
         for ($stepIndex = 1; $stepIndex < $numSteps; $stepIndex++) {
@@ -57,7 +58,7 @@ class RenderMagicCommand extends Command
         $progressBar->clear();
 
         $output->writeln("Making pretty video...");
-        $outFile = VideoMaker::makeVideo($swarmRenderer);
+        $outFile = VideoMaker::makeVideo($input->getArgument("fps"), $swarmRenderer, $input->getOption("play"));
         $swarmRenderer->cleanUp();
 
         $output->writeln(sprintf("All done! Your video is stored in %s", $outFile));
