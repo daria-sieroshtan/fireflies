@@ -9,8 +9,8 @@ class VideoMaker
     public static function makeVideo(int $fps, SwarmRenderer $swarmRenderer, bool $play): string
     {
         $command = sprintf(
-            "ffmpeg -r %s -i %s -r 1 %s 2>&1",
-            $fps,
+            "ffmpeg -f image2 -framerate 25/1 -i %s -r 1 %s 2>&1",
+//            $fps,
             sprintf($swarmRenderer->getFrameNamePattern(), "%" . $swarmRenderer::FRAME_NAME_LENGTH . "d"),
             self::OUTPUT_FILE_NAME
         );

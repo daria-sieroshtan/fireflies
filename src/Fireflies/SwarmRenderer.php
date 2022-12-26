@@ -5,6 +5,8 @@ namespace App\Fireflies;
 
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class SwarmRenderer
 {
@@ -37,7 +39,13 @@ class SwarmRenderer
 
     public function cleanUp(): void
     {
-        // todo rm frames
+        $fs = new Filesystem();
+        $fs->remove(
+            Finder::create()
+                ->files()
+                ->in($this->rootDir)
+                ->name(str_replace("%s", "*", self::FRAME_FILE_NAME_PATTERN))
+        );
     }
 
     public function getFrameNamePattern(): string
@@ -62,18 +70,23 @@ class SwarmRenderer
 
     private function addFirefly(Image $img, FireflyState $firefly): void
     {
-        // todo
-//        $img->insert('public/watermark.png');
-        if ($firefly->getShine() > 0.5) {
+        $radius = $firefly->getShine() * 100;
+        $intensity = 0;
+        while ($radius > 0) {
+            $component = dechex(hexdec("ff")*$intensity);
+            if (strlen($component) === 1) {
+                $component = "0" . $component;
+            }
             $img->circle(
-                30,
+                $radius,
                 $firefly->getX(),
                 $firefly->getY(),
-                function ($draw) {
-                    $draw->background('#fff');
-                    $draw->border(1, '#000');
+                function ($draw) use ($component) {
+                    $draw->background(sprintf('#%s%s%s', $component, $component, $component));
                 }
             );
+            $radius = $radius - 5;
+            $intensity = $intensity + 0.05;
         }
     }
 

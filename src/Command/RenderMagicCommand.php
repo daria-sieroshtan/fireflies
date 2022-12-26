@@ -25,12 +25,12 @@ class RenderMagicCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('field_size', InputArgument::OPTIONAL, 'Field size in pixels', 200)
+            ->addArgument('field_size', InputArgument::OPTIONAL, 'Field size in pixels', 400)
             ->addArgument('fireflies_num', InputArgument::OPTIONAL, 'Number of fireflies', 100)
             ->addArgument('fireflies_sync_factor', InputArgument::OPTIONAL, 'Factor by which nearby fireflies sync', 1)
             ->addArgument('fireflies_period', InputArgument::OPTIONAL, 'Default (before sync) firefly period (in seconds)', 10)
-            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in seconds)', 10)
-            ->addArgument('fps', InputArgument::OPTIONAL, 'FPS of the output movie', 20)
+            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in seconds)', 5)
+            ->addArgument('fps', InputArgument::OPTIONAL, 'FPS of the output movie', 10)
             ->addOption("play", )
         ;
     }
@@ -59,7 +59,7 @@ class RenderMagicCommand extends Command
 
         $output->writeln("Making pretty video...");
         $outFile = VideoMaker::makeVideo($input->getArgument("fps"), $swarmRenderer, $input->getOption("play"));
-        $swarmRenderer->cleanUp();
+//        $swarmRenderer->cleanUp();
 
         $output->writeln(sprintf("All done! Your video is stored in %s", $outFile));
         return Command::SUCCESS;
