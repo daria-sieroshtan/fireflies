@@ -4,8 +4,8 @@ namespace App\Fireflies;
 
 class FireflyState
 {
-    private const SHINE_DURATION = 3;
-    private const SHINE_STEP = 0.5;
+    private const SHINE_DURATION = 20;
+    private const SHINE_STEP = 0.1;
 
     private float $delayedPhaseAdjustment = 0;
 
@@ -17,9 +17,9 @@ class FireflyState
     ) {
     }
 
-    public function adjustPhase(float $phase): void
+    public function shiftPhase(float $shift): void
     {
-        $this->phase = abs(($this->phase + $phase)) % $this->duration;
+        $this->phase = abs(($this->phase + $shift)) % $this->duration;
     }
 
     public function syncPhase(float $phase): void
@@ -31,9 +31,9 @@ class FireflyState
             $this->delayedPhaseAdjustment = 0;
 
             if ($this->phase >= $this->duration / 2) {
-                $this->adjustPhase($phase);
+                $this->shiftPhase($phase);
             } else {
-                $this->adjustPhase(-1 * $phase);
+                $this->shiftPhase(-1 * $phase);
             }
         }
     }

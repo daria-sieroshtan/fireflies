@@ -29,7 +29,7 @@ class Swarm
     public function step(): void
     {
         foreach ($this->fireflies as $firefly) {
-            $firefly->adjustPhase(1);
+            $firefly->shiftPhase(1);
             foreach ($this->fireflies as $neighbourFirefly) {
                 if (self::areFirefliesInTheSamePlace($firefly, $neighbourFirefly) || !$neighbourFirefly->isShining()) {
                     continue;
