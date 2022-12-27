@@ -10,7 +10,7 @@ class VideoMaker
     {
         @unlink(self::OUTPUT_FILE_NAME);
         $command = sprintf(
-            'ffmpeg -f image2 -framerate %s -i %s -loop -1 %s 2>&1',
+            'ffmpeg -f image2 -framerate %s -i %s %s 2>&1',
             $fps,
             sprintf($swarmRenderer->getFrameNamePattern(), "%" . $swarmRenderer::FRAME_NAME_LENGTH . "d"),
             self::OUTPUT_FILE_NAME
