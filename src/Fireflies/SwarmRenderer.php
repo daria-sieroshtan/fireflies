@@ -16,6 +16,7 @@ class SwarmRenderer
     const SHINING = "#ff0";
     const DEFAULT_SHINE_RADIUS = 50;
     const DEFAULT_SHINE_STEP = 0.05;
+    const EPSILON = 10e-4;
 
     private string $rootDir;
     private int $fieldSize;
@@ -87,13 +88,16 @@ class SwarmRenderer
             return;
         }
         $approximateShine = round($fireflyState->getShine() / self::DEFAULT_SHINE_STEP) * self::DEFAULT_SHINE_STEP;
+        if ($approximateShine == 0.0) {
+            return;
+        }
         $firefly = $this->fireflyTemplates[strval($approximateShine)];
         $offset = (int) ($this->shineRadius / 2);
         $img->insert(
             $firefly,
             "top-left",
-            $fireflyState->getX() - $offset,
-            $fireflyState->getY() - $offset
+            $fireflyState->x - $offset,
+            $fireflyState->y - $offset
         );
     }
 
@@ -106,11 +110,12 @@ class SwarmRenderer
         $img->save($this->rootDir . DIRECTORY_SEPARATOR . $generatedFileName);
         $this->framesDumped += 1;
     }
+
     private function prepareFireflyTemplates(): array
     {
         $templates = [];
         $intensity = self::DEFAULT_SHINE_STEP;
-        while ($intensity <= 1) {
+        while ($intensity <= 1 + self::EPSILON) {
             $templates[strval($intensity)] = $this->prepareFireflyTemplate($intensity);
             $intensity += self::DEFAULT_SHINE_STEP;
         }
