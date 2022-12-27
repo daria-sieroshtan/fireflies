@@ -22,15 +22,22 @@ use Symfony\Component\Console\Helper\ProgressBar;
 )]
 class RenderMagicCommand extends Command
 {
+    const DEFAULT_FIELD_SIZE = 400;
+    const DEFAULT_NUM_FIREFLIES = 100;
+    const DEFAULT_SYNC_FACTOR = 1;
+    const DEFAULT_PERIOD = 100;
+    const DEFAULT_DURATION = 1200;
+    const DEFAULT_FPS = 10;
+
     protected function configure(): void
     {
         $this
-            ->addArgument('field_size', InputArgument::OPTIONAL, 'Field size in pixels', 200)
-            ->addArgument('fireflies_num', InputArgument::OPTIONAL, 'Number of fireflies', 100)
-            ->addArgument('fireflies_sync_factor', InputArgument::OPTIONAL, 'Factor by which nearby fireflies sync', 1)
-            ->addArgument('fireflies_period', InputArgument::OPTIONAL, 'Default (before sync) firefly period (in seconds)', 10)
-            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in seconds)', 120)
-            ->addArgument('fps', InputArgument::OPTIONAL, 'FPS of the output movie', 20)
+            ->addArgument('field_size', InputArgument::OPTIONAL, 'Field size in pixels', self::DEFAULT_FIELD_SIZE)
+            ->addArgument('fireflies_num', InputArgument::OPTIONAL, 'Number of fireflies', self::DEFAULT_NUM_FIREFLIES)
+            ->addArgument('fireflies_sync_factor', InputArgument::OPTIONAL, 'Factor by which nearby fireflies sync', self::DEFAULT_SYNC_FACTOR)
+            ->addArgument('fireflies_period', InputArgument::OPTIONAL, 'Default (before sync) firefly period (in steps)', self::DEFAULT_PERIOD)
+            ->addArgument('duration', InputArgument::OPTIONAL, 'Duration of the simulation (in steps)', self::DEFAULT_DURATION)
+            ->addArgument('fps', InputArgument::OPTIONAL, 'FPS of the output movie', self::DEFAULT_FPS)
         ;
     }
 
@@ -45,8 +52,8 @@ class RenderMagicCommand extends Command
         );
 
         $output->writeln("Running simulation...");
-        $swarmRenderer = new SwarmRenderer();
-        $numSteps = $input->getArgument("duration") * $input->getArgument("fps");
+        $swarmRenderer = new SwarmRenderer($input->getArgument("field_size"));
+        $numSteps = $input->getArgument("duration");
         $progressBar = new ProgressBar($output, $numSteps);
         for ($stepIndex = 1; $stepIndex < $numSteps; $stepIndex++) {
             $swarm->step();
@@ -57,7 +64,7 @@ class RenderMagicCommand extends Command
         $progressBar->clear();
 
         $output->writeln("Making pretty video...");
-        $outFile = VideoMaker::makeVideo($swarmRenderer);
+        $outFile = VideoMaker::makeVideo($input->getArgument("fps"), $swarmRenderer);
         $swarmRenderer->cleanUp();
 
         $output->writeln(sprintf("All done! Your video is stored in %s", $outFile));

@@ -4,8 +4,19 @@ namespace App\Fireflies;
 
 class VideoMaker
 {
-    public static function makeVideo(SwarmRenderer $swarmRenderer): string
+    const OUTPUT_FILE_NAME = "fireflies.gif";
+
+    public static function makeVideo(int $fps, SwarmRenderer $swarmRenderer): string
     {
-        return "here_be_fireflies.mp4";
+        @unlink(self::OUTPUT_FILE_NAME);
+        $command = sprintf(
+            'ffmpeg -f image2 -framerate %s -i %s -loop -1 %s 2>&1',
+            $fps,
+            sprintf($swarmRenderer->getFrameNamePattern(), "%" . $swarmRenderer::FRAME_NAME_LENGTH . "d"),
+            self::OUTPUT_FILE_NAME
+        );
+        exec($command, $_);
+
+        return self::OUTPUT_FILE_NAME;
     }
 }
