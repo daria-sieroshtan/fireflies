@@ -5,7 +5,6 @@ namespace App\Fireflies;
 
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
-use JetBrains\PhpStorm\NoReturn;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -24,6 +23,7 @@ class SwarmRenderer
     private ImageManager $imageManager;
     private int $shineRadius;
     private float $shineStep;
+    private array $fireflyTemplates;
 
     public function __construct(
         int $fieldSize,
@@ -40,6 +40,7 @@ class SwarmRenderer
         $this->shineRadius = $shineRadius;
         $this->shineStep = $shineStep;
         $this->imageManager = new ImageManager();
+        $this->fireflyTemplates = $this->prepareFireflyTemplates();
     }
 
     public function renderSwarm(Swarm $swarm): void
@@ -80,12 +81,14 @@ class SwarmRenderer
         }
     }
 
-    private function addFirefly(Image $img, FireflyState $firefly): void
+    private function addFirefly(Image $img, FireflyState $fireflyState): void
     {
-        $shining = $this->imageManager->canvas($this->fieldSize, $this->fieldSize);
-        $shining->fill(self::SHINING);
-        $shining->mask($this->createMask($firefly), false);
-        $img->insert($shining, "top-left");
+        if ($fireflyState->getShine() === 0) {
+            return;
+        }
+        $approximateShine = round($fireflyState->getShine() / self::DEFAULT_SHINE_STEP) * self::DEFAULT_SHINE_STEP;
+        $firefly = $this->fireflyTemplates[strval($approximateShine)];
+        $img->insert($firefly, "top-left", $fireflyState->getX(), $fireflyState->getY());
     }
 
     private function dumpFrame($img): void
@@ -97,29 +100,44 @@ class SwarmRenderer
         $img->save($this->rootDir . DIRECTORY_SEPARATOR . $generatedFileName);
         $this->framesDumped += 1;
     }
-
-    private function createMask(FireflyState $firefly): Image
+    private function prepareFireflyTemplates(): array
     {
-        $img = $this->imageManager->canvas($this->fieldSize, $this->fieldSize);
-        $img->fill('#000');
-        $radius = $firefly->getShine() * $this->shineRadius;
-        $intensity = 0;
-        while ($radius > 0 and $intensity <= 1) {
+        $templates = [];
+        $intensity = self::DEFAULT_SHINE_STEP;
+        while ($intensity <= 1) {
+            $templates[strval($intensity)] = $this->prepareFireflyTemplate($intensity);
+            $intensity += self::DEFAULT_SHINE_STEP;
+        }
+        return $templates;
+    }
+
+    private function prepareFireflyTemplate(float $maxIntensity): Image
+    {
+        $maxRadius = (int) ($this->shineRadius * $maxIntensity);
+        $mask = $this->imageManager->canvas($maxRadius*2, $maxRadius*2);
+        $mask->fill('#000');
+        $intensity = 0.;
+        $radius = $maxRadius;
+        while ($radius > 0 and $intensity <= $maxIntensity) {
             $component = dechex((int)(hexdec("ff")*$intensity));
             if (strlen($component) === 1) {
                 $component = "0" . $component;
             }
-            $img->circle(
+            $mask->circle(
                 (int) $radius,
-                $firefly->getX(),
-                $firefly->getY(),
+                (int) ($maxRadius / 2),
+                (int) ($maxRadius / 2),
                 function ($draw) use ($component) {
                     $draw->background(sprintf('#%s%s%s', $component, $component, $component));
                 }
             );
-            $radius = $radius - ($this->shineStep * $this->shineRadius);
             $intensity = $intensity + $this->shineStep;
+            $radius = $radius - ($this->shineStep * $this->shineRadius);
         }
-        return $img;
+
+        $shining = $this->imageManager->canvas($this->shineRadius*2, $this->shineRadius*2);
+        $shining->fill(self::SHINING);
+        $shining->mask($mask, false);
+        return $shining;
     }
 }
