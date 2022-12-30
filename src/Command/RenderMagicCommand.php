@@ -29,6 +29,11 @@ class RenderMagicCommand extends Command
     const DEFAULT_DURATION = 1200;
     const DEFAULT_FPS = 10;
 
+    public function __construct(private readonly Swarm $swarm)
+    {
+        parent::__construct();
+    }
+
     protected function configure(): void
     {
         $this
@@ -44,7 +49,7 @@ class RenderMagicCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln("Creating swarm...");
-        $swarm = new Swarm(
+        $this->swarm->init(
             $input->getArgument("field_size"),
             $input->getArgument("fireflies_num"),
             $input->getArgument("fireflies_sync_factor"),
@@ -56,8 +61,8 @@ class RenderMagicCommand extends Command
         $numSteps = $input->getArgument("duration");
         $progressBar = new ProgressBar($output, $numSteps);
         for ($stepIndex = 1; $stepIndex < $numSteps; $stepIndex++) {
-            $swarm->step();
-            $swarmRenderer->renderSwarm($swarm);
+            $this->swarm->step();
+            $swarmRenderer->renderSwarm($this->swarm->getState());
             $progressBar->advance();
         }
         $progressBar->finish();

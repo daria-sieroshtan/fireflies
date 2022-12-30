@@ -4,29 +4,54 @@ namespace App\Fireflies;
 
 class FireflyState
 {
-    private $x;
-    private $y;
-    private $shine;
+    private const SHINE_DURATION = 20;
+    private const SHINE_STEP = 0.1;
 
-    public function __construct($x, $y, $shine)
-    {
-        $this->x = $x;
-        $this->y = $y;
-        $this->shine = $shine;
+    private float $delayedPhaseAdjustment = 0;
+
+    public function __construct(
+        public readonly int $x,
+        public readonly int $y,
+        private float $phase,
+        private readonly int $duration
+    ) {
     }
 
-    public function getX()
+    public function shiftPhase(float $shift): void
     {
-        return $this->x;
+        $this->phase = abs(($this->phase + $shift)) % $this->duration;
     }
 
-    public function getY()
+    public function syncPhase(float $phase): void
     {
-        return $this->y;
+        if ($this->isShining()) {
+            $this->delayedPhaseAdjustment += $phase;
+        } else {
+            $phase += $this->delayedPhaseAdjustment;
+            $this->delayedPhaseAdjustment = 0;
+
+            if ($this->phase >= $this->duration / 2) {
+                $this->shiftPhase($phase);
+            } else {
+                $this->shiftPhase(-1 * $phase);
+            }
+        }
     }
 
-    public function getShine()
+    public function getShine(): float
     {
-        return $this->shine;
+        return round(
+            $this->isShining()
+            ? ($this->phase <= self::SHINE_DURATION / 2
+                ? $this->phase * self::SHINE_STEP
+                : (1 - ($this->phase - self::SHINE_DURATION / 2) * self::SHINE_STEP)
+            )
+            : 0,
+        1);
+    }
+
+    public function isShining(): bool
+    {
+        return $this->phase <= self::SHINE_DURATION;
     }
 }
