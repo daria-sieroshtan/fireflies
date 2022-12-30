@@ -43,8 +43,8 @@ class FireflyState
         return round(
             $this->isShining()
             ? ($this->phase <= self::SHINE_DURATION / 2
-                ? round($this->phase * self::SHINE_STEP, 1)
-                : round((1 - ($this->phase - self::SHINE_DURATION / 2) * self::SHINE_STEP), 1)
+                ? $this->phase * self::SHINE_STEP
+                : (1 - ($this->phase - self::SHINE_DURATION / 2) * self::SHINE_STEP)
             )
             : 0,
         1);

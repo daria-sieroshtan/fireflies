@@ -44,10 +44,13 @@ class SwarmRenderer
         $this->fireflyTemplates = $this->prepareFireflyTemplates();
     }
 
-    public function renderSwarm(Swarm $swarm): void
+    /**
+     * @param FireflyState[] $fireflies
+     */
+    public function renderSwarm(array $fireflies): void
     {
         $img = $this->getBaseImage();
-        $this->addSwarm($img, $swarm);
+        $this->addFireflies($img, $fireflies);
         $this->dumpFrame($img);
     }
 
@@ -75,9 +78,12 @@ class SwarmRenderer
         return $img;
     }
 
-    private function addSwarm(Image $img, Swarm $swarm): void
+    /**
+     * @param FireflyState[] $fireflies
+     */
+    private function addFireflies(Image $img, array $fireflies): void
     {
-        foreach ($swarm->getState() as $fireflyState) {
+        foreach ($fireflies as $fireflyState) {
             $this->addFirefly($img, $fireflyState);
         }
     }
