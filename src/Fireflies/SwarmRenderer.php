@@ -88,7 +88,13 @@ class SwarmRenderer
         }
         $approximateShine = round($fireflyState->getShine() / self::DEFAULT_SHINE_STEP) * self::DEFAULT_SHINE_STEP;
         $firefly = $this->fireflyTemplates[strval($approximateShine)];
-        $img->insert($firefly, "top-left", $fireflyState->getX(), $fireflyState->getY());
+        $offset = (int) ($this->shineRadius / 2);
+        $img->insert(
+            $firefly,
+            "top-left",
+            $fireflyState->getX() - $offset,
+            $fireflyState->getY() - $offset
+        );
     }
 
     private function dumpFrame($img): void
